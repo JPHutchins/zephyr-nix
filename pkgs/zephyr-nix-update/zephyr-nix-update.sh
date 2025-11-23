@@ -97,6 +97,7 @@ fi
 
 # Step 3: Activate venv and install west
 echo "Installing west in venv..." >&2
+# shellcheck disable=SC1091
 source "$VENV_PATH/bin/activate"
 uv pip install west
 
