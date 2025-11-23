@@ -38,9 +38,8 @@ let
   # Native build tools (cmake, ninja, dtc, etc.)
   dependencies = import ./mkZephyrDependencies.nix { inherit pkgs; };
 
-  # West projects - user must provide westlock.nix as a path
-  # Users must pass westlockPath = ./westlock.nix (path type, not string)
-  westProjects = west-nix-lib.mkWestProjects westlockPath;
+  # West projects - converts string path to absolute path
+  westProjects = west-nix-lib.mkWestProjects (/. + "/${westlockPath}");
 
   # West workspace setup script
   westWorkspaceSetup = west-nix-lib.mkWestWorkspace { inherit westProjects; };
