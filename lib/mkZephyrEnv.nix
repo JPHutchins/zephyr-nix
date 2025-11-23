@@ -14,8 +14,8 @@
 , toolchainPath ? "${workspaceRoot}/.toolchain"
 , ccachePath ? "${workspaceRoot}/.ccache"
 
-  # Lockfile paths
-, westlockPath ? "westlock.nix"
+  # Lockfile paths (users must pass westlockPath = ./westlock.nix from their flake)
+, westlockPath
 , pylockPath ? "pylock.toml"
 
   # ccache configuration 
@@ -38,8 +38,8 @@ let
   # Native build tools (cmake, ninja, dtc, etc.)
   dependencies = import ./mkZephyrDependencies.nix { inherit pkgs; };
 
-  # West projects - converts string path to absolute path
-  westProjects = west-nix-lib.mkWestProjects (/. + "/${westlockPath}");
+  # West projects - user must provide westlock.nix as a path
+  westProjects = west-nix-lib.mkWestProjects westlockPath;
 
   # West workspace setup script
   westWorkspaceSetup = west-nix-lib.mkWestWorkspace { inherit westProjects; };
