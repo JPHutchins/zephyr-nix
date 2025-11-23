@@ -15,7 +15,7 @@
 , ccachePath ? "${workspaceRoot}/.ccache"
 
   # Lockfile paths
-, westlockPath ? "westlock.nix"
+, westlockPath ? ./westlock.nix
 , pylockPath ? "pylock.toml"
 
   # ccache configuration 
@@ -38,14 +38,9 @@ let
   # Native build tools (cmake, ninja, dtc, etc.)
   dependencies = import ./mkZephyrDependencies.nix { inherit pkgs; };
 
-  # West projects - user must provide westlock.nix
-  # The path is relative to the user's project, so we can't check existence here
-  # The setup script will fail with a helpful error if the file is missing
-  # Convert string to path type if needed (default "westlock.nix" -> ./westlock.nix)
-  westlockPathResolved = if builtins.isString westlockPath
-    then /. + "/${westlockPath}"
-    else westlockPath;
-  westProjects = west-nix-lib.mkWestProjects westlockPathResolved;
+  # West projects - user must provide westlock.nix as a path
+  # Users must pass westlockPath = ./westlock.nix (path type, not string)
+  westProjects = west-nix-lib.mkWestProjects westlockPath;
 
   # West workspace setup script
   westWorkspaceSetup = west-nix-lib.mkWestWorkspace { inherit westProjects; };
