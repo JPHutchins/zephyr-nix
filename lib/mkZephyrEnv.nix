@@ -15,7 +15,7 @@
 , ccachePath ? "${workspaceRoot}/.ccache"
 
   # Lockfile paths
-, westlockPath ? ./westlock.nix
+, westlockPath ? "westlock.nix"
 , pylockPath ? "pylock.toml"
 
   # ccache configuration 
