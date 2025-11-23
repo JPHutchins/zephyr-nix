@@ -23,6 +23,7 @@
 
   # West integration
 , manifestPath ? "."  # Path to manifest directory for westinit
+, manifestFile ? "west.yml"  # Name of the manifest file
 
   # Additional build inputs for the devShell
 , extraBuildInputs ? []
@@ -70,7 +71,7 @@ let
 
     # 2. Setup West workspace (only if not already initialized)
     if [ ! -d "${westWorkspaceRoot}/.west" ]; then
-      ${westWorkspaceSetup}/bin/westinit "${manifestPath}" "${westWorkspaceRoot}"
+      ${westWorkspaceSetup}/bin/westinit "${manifestPath}" "${manifestFile}" "${westWorkspaceRoot}"
     fi
 
     # 3. Setup Python environment
