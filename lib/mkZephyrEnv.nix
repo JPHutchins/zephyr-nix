@@ -38,15 +38,13 @@ let
   # Native build tools (cmake, ninja, dtc, etc.)
   dependencies = import ./mkZephyrDependencies.nix { inherit pkgs; };
 
-  # West projects (if westlock.nix exists, load it)
-  westProjects = if builtins.pathExists westlockPath
-    then west-nix-lib.mkWestProjects westlockPath
-    else null;
+  # West projects - user must provide westlock.nix
+  # The path is relative to the user's project, so we can't check existence here
+  # The setup script will fail with a helpful error if the file is missing
+  westProjects = west-nix-lib.mkWestProjects westlockPath;
 
-  # West workspace setup script (only if westlock.nix exists)
-  westWorkspaceSetup = if westProjects != null
-    then west-nix-lib.mkWestWorkspace { inherit westProjects; }
-    else null;
+  # West workspace setup script
+  westWorkspaceSetup = west-nix-lib.mkWestWorkspace { inherit westProjects; };
 
   # Python environment setup script
   pythonEnvSetup = (import ./mkPythonEnv { inherit pkgs; }) {
@@ -72,21 +70,15 @@ let
     rm -f "${toolchainPath}"
     ln -sf "${sdk}" "${toolchainPath}"
 
-    ${if westProjects == null then ''
-    echo "Error: westlock.nix not found at ${westlockPath}" >&2
-    echo "Generate lockfiles with: nix run github:JPHutchins/zephyr-nix#zephyr-nix-update west.yml" >&2
-    exit 1
-    '' else ''
     # 2. Setup West workspace (only if not already initialized)
     if [ ! -d "${westWorkspaceRoot}/.west" ]; then
       ${westWorkspaceSetup}/bin/westinit "${manifestPath}" "${westWorkspaceRoot}"
     fi
-    ''}
 
     # 3. Setup Python environment
     if [ ! -f "${pylockPath}" ]; then
       echo "Error: pylock.toml not found at ${pylockPath}" >&2
-      echo "Generate lockfiles with: nix run github:JPHutchins/zephyr-nix#zephyr-nix-update west.yml" >&2
+      echo "Generate lockfiles with: nix run github:JPHutchins/zephyr-nix#update" >&2
       exit 1
     fi
     ${pythonEnvSetup}/bin/python-env-setup "${workspaceRoot}" "${pylockPath}"
@@ -114,7 +106,7 @@ pkgs.buildEnv {
   ]
     ++ dependencies
     ++ extraBuildInputs
-    ++ (pkgs.lib.optional (westWorkspaceSetup != null) westWorkspaceSetup);
+    ++ [ westWorkspaceSetup ];
 
   # Expose components for advanced use cases
   passthru = {

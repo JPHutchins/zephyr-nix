@@ -1,7 +1,7 @@
 { pkgs, west-nix }:
 
 pkgs.writeShellApplication {
-  name = "zephyr-nix-update";
+  name = "update";
 
   runtimeInputs = [
     pkgs.python3
@@ -9,7 +9,7 @@ pkgs.writeShellApplication {
     west-nix.packages.${pkgs.system}.westupdate
   ];
 
-  text = builtins.readFile ./zephyr-nix-update.sh;
+  text = builtins.readFile ./update.sh;
 
   meta = with pkgs.lib; {
     description = "Update westlock.nix and pylock.toml for Zephyr projects";
@@ -20,6 +20,6 @@ pkgs.writeShellApplication {
       3. Generating pylock.toml from installed packages
     '';
     license = licenses.mit;
-    mainProgram = "zephyr-nix-update";
+    mainProgram = "update";
   };
 }
