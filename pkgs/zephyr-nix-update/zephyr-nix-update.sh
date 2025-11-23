@@ -87,8 +87,8 @@ echo "Generating $WESTLOCK_PATH from $MANIFEST_FILE..." >&2
 westupdate "$MANIFEST_FILE" > "$WESTLOCK_PATH"
 echo "✓ Generated $WESTLOCK_PATH" >&2
 
-# Step 2: Create venv if it doesn't exist
-if [ ! -d "$VENV_PATH" ]; then
+# Step 2: Create venv if it doesn't exist or is invalid
+if [ ! -d "$VENV_PATH" ] || [ ! -f "$VENV_PATH/bin/activate" ]; then
   echo "Creating Python venv at $VENV_PATH..." >&2
   uv venv --seed "$VENV_PATH"
 else
