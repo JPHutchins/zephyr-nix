@@ -41,7 +41,11 @@ let
   # West projects - user must provide westlock.nix
   # The path is relative to the user's project, so we can't check existence here
   # The setup script will fail with a helpful error if the file is missing
-  westProjects = west-nix-lib.mkWestProjects westlockPath;
+  # Convert string to path type if needed (default "westlock.nix" -> ./westlock.nix)
+  westlockPathResolved = if builtins.isString westlockPath
+    then /. + "/${westlockPath}"
+    else westlockPath;
+  westProjects = west-nix-lib.mkWestProjects westlockPathResolved;
 
   # West workspace setup script
   westWorkspaceSetup = west-nix-lib.mkWestWorkspace { inherit westProjects; };
