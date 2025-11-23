@@ -25,6 +25,9 @@
             architectures = [ "riscv64" ];
           };
           pylock = pkgs.callPackage ./pkgs/pylock { };
+          zephyr-nix-update = pkgs.callPackage ./pkgs/zephyr-nix-update {
+            inherit west-nix;
+          };
         };
 
         lib = {

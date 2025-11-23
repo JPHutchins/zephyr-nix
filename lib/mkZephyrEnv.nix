@@ -74,7 +74,7 @@ let
 
     ${if westProjects == null then ''
     echo "Error: westlock.nix not found at ${westlockPath}" >&2
-    echo "Generate it with: nix run github:JPHutchins/west-nix#westupdate west.yml > ${westlockPath}" >&2
+    echo "Generate lockfiles with: nix run github:JPHutchins/zephyr-nix#zephyr-nix-update west.yml" >&2
     exit 1
     '' else ''
     # 2. Setup West workspace (only if not already initialized)
@@ -86,7 +86,7 @@ let
     # 3. Setup Python environment
     if [ ! -f "${pylockPath}" ]; then
       echo "Error: pylock.toml not found at ${pylockPath}" >&2
-      echo "Generate it by installing packages and running: pylock" >&2
+      echo "Generate lockfiles with: nix run github:JPHutchins/zephyr-nix#zephyr-nix-update west.yml" >&2
       exit 1
     fi
     ${pythonEnvSetup}/bin/python-env-setup "${workspaceRoot}" "${pylockPath}"
