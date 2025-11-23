@@ -64,6 +64,11 @@ let
     # Create workspace root
     mkdir -p "${workspaceRoot}"
 
+    # Add .gitignore to workspace to ignore all generated content
+    cat > "${workspaceRoot}/.gitignore" <<'EOF'
+*
+EOF
+
     # 1. Setup SDK symlink
     mkdir -p "$(dirname "${toolchainPath}")"
     rm -f "${toolchainPath}"
