@@ -167,14 +167,26 @@ REQUIREMENTS_TMP=$(mktemp --suffix=.in)
 trap 'rm -f "$REQUIREMENTS_TMP"; cleanup' EXIT
 
 log "Freezing installed packages..."
-uv pip freeze > "$REQUIREMENTS_TMP" 2>&1 | while read -r line; do log "$line"; done
+if [ "$VERBOSE" = true ]; then
+  uv pip freeze > "$REQUIREMENTS_TMP"
+else
+  uv pip freeze > "$REQUIREMENTS_TMP" 2>/dev/null
+fi
 
 log "Compiling pylock.toml..."
-uv pip compile "$REQUIREMENTS_TMP" \
-  --python-version "$PYTHON_VERSION" \
-  --format pylock.toml \
-  --custom-compile-command "nix run github:JPHutchins/zephyr-nix#update" \
-  -o "$PYLOCK_PATH" 2>&1 | while read -r line; do log "$line"; done
+if [ "$VERBOSE" = true ]; then
+  uv pip compile "$REQUIREMENTS_TMP" \
+    --python-version "$PYTHON_VERSION" \
+    --format pylock.toml \
+    --custom-compile-command "nix run github:JPHutchins/zephyr-nix#update" \
+    -o "$PYLOCK_PATH"
+else
+  uv pip compile "$REQUIREMENTS_TMP" \
+    --python-version "$PYTHON_VERSION" \
+    --format pylock.toml \
+    --custom-compile-command "nix run github:JPHutchins/zephyr-nix#update" \
+    -o "$PYLOCK_PATH" 2>/dev/null
+fi
 
 log "✓ Generated $PYLOCK_PATH"
 echo "Updated: $WESTLOCK_PATH, $PYLOCK_PATH"
