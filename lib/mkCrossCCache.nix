@@ -1,6 +1,6 @@
 { pkgs }:
 
-{ workspaceRoot
+{ workspaceRoot # TODO: this should be absolute path
 , maxSize
 }:
 
