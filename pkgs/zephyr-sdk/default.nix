@@ -117,7 +117,7 @@ stdenv.mkDerivation rec {
 #!/bin/sh
 export ZEPHYR_SDK_INSTALL_DIR="$out"
 export ZEPHYR_TOOLCHAIN_VARIANT="zephyr"
-export CMAKE_PREFIX_PATH="$out/cmake:''${CMAKE_PREFIX_PATH}"
+export CMAKE_PREFIX_PATH="$out/cmake:''${CMAKE_PREFIX_PATH:-}"
 EOF
     chmod +x "$out/environment-setup-zephyr.sh"
 
