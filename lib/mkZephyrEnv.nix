@@ -109,8 +109,10 @@ pkgs.mkShell {
     ++ [ westWorkspaceSetup ];
 
   shellHook = ''
-    # Run the setup script to initialize everything
-    ${setupScript}/bin/zephyr-env-setup
+    # Only run setup in interactive shells, not during derivation build
+    if [ -n "$PS1" ]; then
+      ${setupScript}/bin/zephyr-env-setup
+    fi
   '';
 
   passthru = {
