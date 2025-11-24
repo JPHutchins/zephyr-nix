@@ -86,8 +86,8 @@ fi
 
 # Determine venv path and cleanup strategy
 if [ -z "$VENV_PATH" ]; then
-  # No venv specified - create transient one in /tmp
-  VENV_PATH=$(mktemp -d --suffix=-zephyr-nix-update-venv)
+  # No venv specified - create transient one in /tmp with unique prefix
+  VENV_PATH=$(mktemp -d --suffix=-zephyr-nix-update-venv --tmpdir=/tmp)
   CLEANUP_VENV=true
 else
   # User specified venv - reuse if exists, don't cleanup
@@ -140,8 +140,8 @@ source "$VENV_PATH/bin/activate"
 uv pip install west 2>&1 | while read -r line; do log "$line"; done
 
 # Step 5: Initialize west workspace
-# Create a temporary workspace directory
-WEST_WORKSPACE=$(mktemp -d --suffix=-west-workspace)
+# Create a temporary workspace directory in /tmp to avoid conflicts
+WEST_WORKSPACE=$(mktemp -d --suffix=-west-workspace --tmpdir=/tmp)
 
 log "Initializing west workspace in $WEST_WORKSPACE..."
 pushd "$WEST_WORKSPACE" > /dev/null 2>&1
