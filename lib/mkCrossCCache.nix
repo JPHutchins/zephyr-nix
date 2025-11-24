@@ -12,8 +12,8 @@ pkgs.symlinkJoin {
       export CCACHE_DIR="${workspaceRoot}/.ccache"
       export CCACHE_MAXSIZE="${maxSize}"
       export CCACHE_IGNOREOPTIONS="-specs=* --specs=*"
-      export CMAKE_C_COMPILER_LAUNCHER="${pkgs.ccache}/bin/ccache"
-      export CMAKE_CXX_COMPILER_LAUNCHER="${pkgs.ccache}/bin/ccache"
+      export CMAKE_C_COMPILER_LAUNCHER="ccache"
+      export CMAKE_CXX_COMPILER_LAUNCHER="ccache"
       mkdir -p "$CCACHE_DIR"
     '')
   ];
