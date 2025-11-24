@@ -98,21 +98,18 @@ EOF
 
 in
 pkgs.mkShell {
-  buildInputs = [
+  packages = [
     setupScript
     sdk
     pythonEnvSetup
     ccacheSetup
+    westWorkspaceSetup
   ]
     ++ dependencies
-    ++ extraBuildInputs
-    ++ [ westWorkspaceSetup ];
+    ++ extraBuildInputs;
 
   shellHook = ''
-    # Only run setup in interactive shells, not during derivation build
-    if [ -n "$PS1" ]; then
-      ${setupScript}/bin/zephyr-env-setup
-    fi
+    ${setupScript}/bin/zephyr-env-setup
   '';
 
   passthru = {
