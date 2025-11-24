@@ -156,11 +156,8 @@ west update 2>&1 | while read -r line; do log "$line"; done
 
 # Step 5: Install west packages
 log "Installing Python dependencies from west workspace..."
-if west packages pip --install 2>&1 | grep -q "No pip packages to install"; then
-  log "No pip packages specified in manifest"
-else
-  log "✓ Installed west packages"
-fi 2>&1 | while read -r line; do log "$line"; done
+west packages pip --install 2>&1 | while read -r line; do log "$line"; done
+log "✓ Installed west packages"
 
 popd > /dev/null 2>&1
 
@@ -169,8 +166,10 @@ log "Generating $PYLOCK_PATH..."
 REQUIREMENTS_TMP=$(mktemp --suffix=.in)
 trap 'rm -f "$REQUIREMENTS_TMP"; cleanup' EXIT
 
+log "Freezing installed packages..."
 uv pip freeze > "$REQUIREMENTS_TMP" 2>&1 | while read -r line; do log "$line"; done
 
+log "Compiling pylock.toml..."
 uv pip compile "$REQUIREMENTS_TMP" \
   --python-version "$PYTHON_VERSION" \
   --format pylock.toml \
