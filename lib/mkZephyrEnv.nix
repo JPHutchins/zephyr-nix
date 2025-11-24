@@ -90,19 +90,15 @@ EOF
     # 4. Source component environment scripts
     source ${sdk}/environment-setup-zephyr.sh
     source ${ccacheSetup}/bin/cross-ccache-setup
-    ${if westProjects != null then ''
     source "${westWorkspaceRoot}/env.sh"
-    '' else ""}
 
     # 5. Activate Python venv
     source "${venvPath}/bin/activate"
   '';
 
 in
-pkgs.buildEnv {
-  name = "zephyr-env-${sdkVersion}";
-
-  paths = [
+pkgs.mkShell {
+  buildInputs = [
     setupScript
     sdk
     pythonEnvSetup
@@ -112,35 +108,16 @@ pkgs.buildEnv {
     ++ extraBuildInputs
     ++ [ westWorkspaceSetup ];
 
-  # Expose components for advanced use cases
+  shellHook = ''
+    # Run the setup script to initialize everything
+    ${setupScript}/bin/zephyr-env-setup
+  '';
+
   passthru = {
     inherit sdk pythonEnvSetup dependencies setupScript ccacheSetup;
     inherit westProjects westWorkspaceSetup;
     inherit sdkVersion architectures pythonVersion;
     inherit workspaceRoot westWorkspaceRoot venvPath toolchainPath ccachePath;
     inherit westlockPath pylockPath ccacheMaxSize;
-  };
-
-  meta = with pkgs.lib; {
-    description = "Complete Zephyr RTOS build environment with SDK, toolchain, and dependencies";
-    longDescription = ''
-      A unified build environment for Zephyr RTOS projects that includes:
-      - Zephyr SDK ${sdkVersion} with cross-compilation toolchains for: ${builtins.concatStringsSep ", " architectures}
-      - Native build tools (cmake, ninja, dtc, etc.)
-      - Python ${pythonVersion} environment setup
-      - West workspace integration (if westlock.nix exists)
-      - ccache support (${ccacheMaxSize} cache)
-
-      Run 'zephyr-env-setup' to initialize the workspace, or add to devShell's shellHook.
-
-      Workspace structure:
-        ${workspaceRoot}/
-          ${builtins.baseNameOf westWorkspaceRoot}/  - West workspace (symlinks to Nix store)
-          ${builtins.baseNameOf venvPath}/           - Python virtual environment (cached)
-          ${builtins.baseNameOf toolchainPath}/      - Zephyr SDK (symlink to Nix store)
-          ${builtins.baseNameOf ccachePath}/         - ccache directory
-          env.sh                                      - Environment activation script
-    '';
-    platforms = platforms.linux;
   };
 }
