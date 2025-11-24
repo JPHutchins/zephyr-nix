@@ -8,6 +8,7 @@ set -euo pipefail
 #   --westlock PATH    Output path for westlock.nix (default: westlock.nix)
 #   --pylock PATH      Output path for pylock.toml (default: pylock.toml)
 #   --venv PATH        Existing venv path to reuse (optional, creates temp if not specified)
+#   --python-version V Python version for pylock.toml (default: 3.12)
 #   --verbose          Show detailed progress messages
 #   --help             Show this help message
 #
@@ -17,6 +18,7 @@ set -euo pipefail
 WESTLOCK_PATH="westlock.nix"
 PYLOCK_PATH="pylock.toml"
 VENV_PATH=""
+PYTHON_VERSION="3.12"
 MANIFEST_FILE=""
 VERBOSE=false
 
@@ -33,6 +35,10 @@ while [[ $# -gt 0 ]]; do
       ;;
     --venv)
       VENV_PATH="$2"
+      shift 2
+      ;;
+    --python-version)
+      PYTHON_VERSION="$2"
       shift 2
       ;;
     --verbose)
@@ -111,12 +117,15 @@ cleanup() {
 }
 trap cleanup EXIT
 
-# Step 1: Generate westlock.nix
+# Step 1: Resolve absolute path to manifest before any directory changes
+MANIFEST_FILE_ABS="$(realpath "$MANIFEST_FILE")"
+
+# Step 2: Generate westlock.nix
 log "Generating $WESTLOCK_PATH from $MANIFEST_FILE..."
-westupdate "$MANIFEST_FILE" > "$WESTLOCK_PATH"
+westupdate "$MANIFEST_FILE_ABS" > "$WESTLOCK_PATH"
 log "✓ Generated $WESTLOCK_PATH"
 
-# Step 2: Create venv if it doesn't exist or is invalid
+# Step 3: Create venv if it doesn't exist or is invalid
 if [ ! -d "$VENV_PATH" ] || [ ! -f "$VENV_PATH/bin/activate" ]; then
   log "Creating Python venv at $VENV_PATH..."
   uv venv --seed "$VENV_PATH" 2>&1 | while read -r line; do log "$line"; done
@@ -124,13 +133,13 @@ else
   log "Reusing existing venv at $VENV_PATH..."
 fi
 
-# Step 3: Activate venv and install west
+# Step 4: Activate venv and install west
 log "Installing west in venv..."
 # shellcheck disable=SC1091
 source "$VENV_PATH/bin/activate"
 uv pip install west 2>&1 | while read -r line; do log "$line"; done
 
-# Step 4: Initialize west workspace
+# Step 5: Initialize west workspace
 # Create a temporary workspace directory
 WEST_WORKSPACE=$(mktemp -d --suffix=-west-workspace)
 
@@ -138,7 +147,7 @@ log "Initializing west workspace in $WEST_WORKSPACE..."
 pushd "$WEST_WORKSPACE" > /dev/null 2>&1
 
 # Copy manifest to workspace and initialize
-cp "$(realpath "$MANIFEST_FILE")" west.yml
+cp "$MANIFEST_FILE_ABS" west.yml
 west init -l . 2>&1 | while read -r line; do log "$line"; done
 
 # Update to clone all repositories
@@ -163,6 +172,7 @@ trap 'rm -f "$REQUIREMENTS_TMP"; cleanup' EXIT
 uv pip freeze > "$REQUIREMENTS_TMP" 2>&1 | while read -r line; do log "$line"; done
 
 uv pip compile "$REQUIREMENTS_TMP" \
+  --python-version "$PYTHON_VERSION" \
   --format pylock.toml \
   --custom-compile-command "nix run github:JPHutchins/zephyr-nix#update" \
   -o "$PYLOCK_PATH" 2>&1 | while read -r line; do log "$line"; done
