@@ -4,7 +4,6 @@ pkgs.writeShellApplication {
   name = "update";
 
   runtimeInputs = [
-    pkgs.python3
     pkgs.uv
     west-nix.packages.${pkgs.system}.westupdate
   ];

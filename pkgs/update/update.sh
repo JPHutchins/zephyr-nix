@@ -128,7 +128,7 @@ log "✓ Generated $WESTLOCK_PATH"
 # Step 3: Create venv if it doesn't exist or is invalid
 if [ ! -d "$VENV_PATH" ] || [ ! -f "$VENV_PATH/bin/activate" ]; then
   log "Creating Python venv at $VENV_PATH..."
-  uv venv --seed "$VENV_PATH" 2>&1 | while read -r line; do log "$line"; done
+  uv venv --python "$PYTHON_VERSION" --seed "$VENV_PATH" 2>&1 | while read -r line; do log "$line"; done
 else
   log "Reusing existing venv at $VENV_PATH..."
 fi
