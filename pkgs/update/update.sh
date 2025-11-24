@@ -113,7 +113,7 @@ trap cleanup EXIT
 
 # Step 1: Generate westlock.nix
 log "Generating $WESTLOCK_PATH from $MANIFEST_FILE..."
-westupdate "$MANIFEST_FILE" > "$WESTLOCK_PATH" 2>&1 | while read -r line; do log "$line"; done
+westupdate "$MANIFEST_FILE" > "$WESTLOCK_PATH"
 log "✓ Generated $WESTLOCK_PATH"
 
 # Step 2: Create venv if it doesn't exist or is invalid
