@@ -57,7 +57,7 @@ let
     maxSize = ccacheMaxSize;
   };
 
-  # Main setup script that orchestrates everything
+  # Main setup script that orchestrates everything (initialization only, no sourcing)
   setupScript = pkgs.writeShellScriptBin "zephyr-env-setup" ''
     set -euo pipefail
 
@@ -86,14 +86,6 @@ EOF
       exit 1
     fi
     ${pythonEnvSetup}/bin/python-env-setup "${workspaceRoot}" "${pylockPath}"
-
-    # 4. Source component environment scripts
-    source ${sdk}/environment-setup-zephyr.sh
-    source ${ccacheSetup}/bin/cross-ccache-setup
-    source "${westWorkspaceRoot}/env.sh"
-
-    # 5. Activate Python venv
-    source "${venvPath}/bin/activate"
   '';
 
 in
@@ -109,7 +101,14 @@ pkgs.mkShell {
     ++ extraBuildInputs;
 
   shellHook = ''
+    # Run initialization
     ${setupScript}/bin/zephyr-env-setup
+
+    # Activate environment in the interactive shell
+    source ${sdk}/environment-setup-zephyr.sh
+    source ${ccacheSetup}/bin/cross-ccache-setup
+    source "${westWorkspaceRoot}/env.sh"
+    source "${venvPath}/bin/activate"
   '';
 
   passthru = {
