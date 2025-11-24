@@ -88,6 +88,9 @@ else
   CLEANUP_VENV=false
 fi
 
+# Will be set after creating workspace
+WEST_WORKSPACE=""
+
 # Logging helpers
 log() {
   if [ "$VERBOSE" = true ]; then
@@ -97,6 +100,10 @@ log() {
 
 # Cleanup function
 cleanup() {
+  if [ -n "$WEST_WORKSPACE" ]; then
+    log "Cleaning up temporary workspace at $WEST_WORKSPACE..."
+    rm -rf "$WEST_WORKSPACE"
+  fi
   if [ "$CLEANUP_VENV" = true ]; then
     log "Cleaning up temporary venv at $VENV_PATH..."
     rm -rf "$VENV_PATH"
@@ -123,15 +130,32 @@ log "Installing west in venv..."
 source "$VENV_PATH/bin/activate"
 uv pip install west 2>&1 | while read -r line; do log "$line"; done
 
-# Step 4: Install west packages
-log "Installing Python dependencies from west manifest..."
+# Step 4: Initialize west workspace
+# Create a temporary workspace directory
+WEST_WORKSPACE=$(mktemp -d --suffix=-west-workspace)
+
+log "Initializing west workspace in $WEST_WORKSPACE..."
+pushd "$WEST_WORKSPACE" > /dev/null 2>&1
+
+# Copy manifest to workspace and initialize
+cp "$(realpath "$MANIFEST_FILE")" west.yml
+west init -l . 2>&1 | while read -r line; do log "$line"; done
+
+# Update to clone all repositories
+log "Cloning west repositories (this may take a while)..."
+west update 2>&1 | while read -r line; do log "$line"; done
+
+# Step 5: Install west packages
+log "Installing Python dependencies from west workspace..."
 if west packages pip --install 2>&1 | grep -q "No pip packages to install"; then
   log "No pip packages specified in manifest"
 else
   log "✓ Installed west packages"
 fi 2>&1 | while read -r line; do log "$line"; done
 
-# Step 5: Generate pylock.toml
+popd > /dev/null 2>&1
+
+# Step 6: Generate pylock.toml
 log "Generating $PYLOCK_PATH..."
 REQUIREMENTS_TMP=$(mktemp --suffix=.in)
 trap 'rm -f "$REQUIREMENTS_TMP"; cleanup' EXIT
